@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-struct Task: Identifiable {
-    let id = UUID()
-    var title: String
-    var isCompleted: Bool = false
-}
+//struct Task: Identifiable {
+//    let id = UUID()
+//    var title: String
+//    var isCompleted: Bool = false
+//}
 
 struct ContentView: View {
 
@@ -35,25 +35,19 @@ struct ContentView: View {
 
                 Text("My Tasks")
                     .font(.title)
+                
+                Text("\(tasks.count) Tasks")
 
                 List {
-//                    ForEach(tasks, id: \.self) { task in
-//                        Text(task)
-//                    }
                     ForEach($tasks) { $task in
-                        HStack {
-                            Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(task.isCompleted ? .green : .gray)
-                                .font(.title2).foregroundStyle(task.isCompleted ? .green : .gray)
-                            
-                            Text(task.title)
-                                .strikethrough(task.isCompleted)
-                                .foregroundStyle(task.isCompleted ? .green : .primary)
-                        }
-                        .onTapGesture {
-                            task.isCompleted.toggle()
+                        NavigationLink {
+                            // Destination
+                            TaskDetailView(task: $task)
+                        } label: {
+                            TaskRow(task: $task)
                         }
                     }
+                    
                     .onDelete { indexSet in
                         tasks.remove(atOffsets: indexSet)
                     }
