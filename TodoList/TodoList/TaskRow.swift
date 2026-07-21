@@ -9,7 +9,7 @@
 
     struct TaskRow: View {
 
-        @Binding var task: Task
+         var task: Task
         
 
         var body: some View {
@@ -33,5 +33,5 @@
     }
 
     #Preview {
-        TaskRow(task: .constant(Task(title: "Learn SwiftUI")))
+        TaskRow(task: Task(title: "Learn SwiftUI"))
     }

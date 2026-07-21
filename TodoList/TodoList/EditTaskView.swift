@@ -6,18 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct TaskDetailView: View {
 
-    @Binding var task: Task
-    @State private var editedTask: Task
+    @Bindable var task: Task
+ 
 
     @Environment(\.dismiss) private var dismiss
     
-    init(task: Binding<Task>) {
-        self._task = task
-        self._editedTask = State(initialValue: task.wrappedValue)
-    }
+  
 
     var body: some View {
 
@@ -25,18 +23,13 @@ struct TaskDetailView: View {
 
             Section("Task") {
 
-                TextField("Task Title", text: $editedTask.title)
+                TextField("Task Title", text: Bindable(task).title)
 
-                Toggle("Completed", isOn: $editedTask.isCompleted)
+                Toggle("Completed", isOn: Bindable(task).isCompleted)
 
             }
 
-            Button("Save") {
-               task = editedTask
-                dismiss()
-            }
-            
-            Button("Cancel") {
+           Button("Done") {
                 dismiss()
             }
         }
@@ -45,7 +38,10 @@ struct TaskDetailView: View {
 }
 
 #Preview {
-    NavigationStack {
-        TaskDetailView(task: .constant(Task(title: "Learn SwiftUI")))
+    let container = try! ModelContainer(for: Task.self)
+
+    return NavigationStack {
+        TaskDetailView(task: Task(title: "Learn Swift"))
     }
+    .modelContainer(container)
 }

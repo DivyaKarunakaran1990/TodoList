@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 //struct Task: Identifiable {
 //    let id = UUID()
@@ -16,17 +17,22 @@ import SwiftUI
 struct ContentView: View {
 
 //    @State private var tasks = ["Learn Swift", "create login screen", "Integrate REST API"]
-    @State private var tasks = [
-        Task(title: "Implement SwiftUI login screen"),
-            Task(title: "Integrate REST API authentication"),
-            Task(title: "Review app architecture"),
-            Task(title: "Improve application performance"),
-            Task(title: "Fix production crash issue"),
-            Task(title: "Deploy new build"),
-            Task(title: "Update CI/CD pipeline")
-    ]
+//    @State private var tasks = [
+//        Task(title: "Implement SwiftUI login screen"),
+//            Task(title: "Integrate REST API authentication"),
+//            Task(title: "Review app architecture"),
+//            Task(title: "Improve application performance"),
+//            Task(title: "Fix production crash issue"),
+//            Task(title: "Deploy new build"),
+//            Task(title: "Update CI/CD pipeline")
+//    ]
+    
+    @Query private var tasks: [Task]
     @State private var newTask = ""
     @State private var message = ""
+    
+    
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
 
@@ -39,18 +45,21 @@ struct ContentView: View {
                 Text("\(tasks.count) Tasks")
 
                 List {
-                    ForEach($tasks) { $task in
+                    ForEach(tasks) { task in
                         NavigationLink {
                             // Destination
-                            TaskDetailView(task: $task)
+                            TaskDetailView(task: task)
                         } label: {
-                            TaskRow(task: $task)
+                            TaskRow(task: task)
+                        }
+                    }
+                    .onDelete { indexSet in
+                        for index in indexSet {
+                            let task = tasks[index]
+                            modelContext.delete(task)
                         }
                     }
                     
-                    .onDelete { indexSet in
-                        tasks.remove(atOffsets: indexSet)
-                    }
                 }
 
                 TextField("Enter task", text: $newTask)
@@ -58,19 +67,31 @@ struct ContentView: View {
                     .padding(.horizontal)
 
                 Button("Add Task") {
+
                     let trimmedTask = newTask.trimmingCharacters(in: .whitespacesAndNewlines)
 
                     if trimmedTask.isEmpty {
-                            message = "Please enter a task"
-                        }
+                        message = "Please enter a task"
+                    }
                     else if tasks.contains(where: { $0.title.lowercased() == trimmedTask.lowercased() }) {
                         message = "Task already exists"
                     }
-                        else {
-                            tasks.append(Task(title: trimmedTask))
-                            newTask = ""
-                            message = "Task added successfully"
+                    else {
+
+                        let task = Task(title: trimmedTask)
+
+                        modelContext.insert(task)
+
+                        do {
+                            try modelContext.save()
+                            print("✅ Saved:", task.title)
+                        } catch {
+                            print("❌ Save error:", error)
                         }
+
+                        newTask = ""
+                        message = "Task added successfully"
+                    }
                 }
                 .padding()
                 .buttonStyle(.borderedProminent)
